@@ -2,7 +2,7 @@ import {app} from "./app.js"
 import dotenv from "dotenv"
 dotenv.config()
 const PORT = process.env.PORT || 3001
-import { connectDb } from "./databse/index.js"
+import { connectDb } from "./database/index.js"
 
 connectDb()
   .then(() => {
