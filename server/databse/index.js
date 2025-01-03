@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import { DATABASE_NAME } from "../constants.js";
 
 const connectDb = async () => {
   try {
     const connection = await mongoose.connect(
-      "mongodb+srv://gamakgrover:uRyVZtrtsXFyr60y@cluster0.dzlzij5.mongodb.net/",
+      `${process.env.MONGO_URL}/${DATABASE_NAME}`,
     
     );
 
