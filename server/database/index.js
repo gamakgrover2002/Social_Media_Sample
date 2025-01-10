@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
-import { DATABASE_NAME } from "../constants.js";
 
-const connectDb = async () => {
+const connectDb =  async () => {
   try {
     const connection = await mongoose.connect(
-      `${process.env.MONGO_URL}/${DATABASE_NAME}`,
+      `${process.env.MONGO_URL}/EventMManagement`,
     
     );
 

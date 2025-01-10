@@ -8,4 +8,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-export  {app};
+
+import eventRouter from './routes/events.routes.js';
+
+
+
+app.use("/api/v1/events", eventRouter);
+
+export { app };
