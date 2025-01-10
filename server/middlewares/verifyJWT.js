@@ -7,11 +7,9 @@ import dotenv from "dotenv";
 dotenv.config();
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers["authorization"];
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new ApiError("Not authorized, token is required", 401);
   }
-
   const token = authHeader.split(" ")[1].trim();
   const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_EXPIRY_SECRET);
   const user = await User.findById(decoded._id);
@@ -19,6 +17,5 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     throw new ApiError("User not found", 404);
   }
   req.user = user;
-  console.log(user, "user");
   next();
 });

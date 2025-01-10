@@ -5,7 +5,7 @@ import { verifyJWT } from '../middlewares/verifyJWT.js';
 const router = express.Router();
 
 
-router.route("/").post(addEvent); 
+router.route("/").post(verifyJWT,addEvent); 
 router.route("/").get(verifyJWT,getEvents)
 
 export default router;

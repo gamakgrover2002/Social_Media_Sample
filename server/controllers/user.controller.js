@@ -1,8 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/User.model.js";
-import { ApiResponse } from "../utils/apiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken"
+import { ApiError } from "../utils/ApiError.js";
+import dotenv from "dotenv"
+
+dotenv.config({
+  path:"../.env"
+});
 
 const generateTokens = async (user, res) => {
   try {
@@ -49,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
     
     return res
       .status(201)
-      .send(new ApiResponse(201, newUser, "User successfully created"));
+      .send("User successfully created");
   } catch (error) {
     console.error("Error registering user:", error);
     return res.status(500).send("Internal Server Error");
@@ -72,7 +76,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
     await generateTokens(user, res);
 
-    return res.status(200).send(new ApiResponse(200, user, "Login successful"));
+    return res.status(200).send("Login successful");
   } catch (error) {
     console.error("Error logging in user:", error);
     return res.status(500).send("Internal Server Error");
@@ -80,7 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  console.log(req.body)
+
   const incomingToken =  req.body.refreshToken;
 
   if (!incomingToken) {
@@ -107,7 +111,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
   const accessId = req.user._id.toString();
-  d;
+
   await User.findByIdAndUpdate(accessId, {
     $set: {
       refreshToken: "",

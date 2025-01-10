@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -14,12 +14,10 @@ const userSchema = new Schema({
   password:{
     type: String,
     required: true,
-    minlength: 8
   },
   role:{
     type: String,
-    required: true,
-    enum: ["User", "Admin"]
+   
   },
   events:[{
       type: Schema.Types.ObjectId,
