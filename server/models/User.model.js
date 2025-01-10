@@ -19,7 +19,7 @@ const userSchema = new Schema({
   role:{
     type: String,
     required: true,
-    enum: ["User", "admin"]
+    enum: ["User", "Admin"]
   },
   events:[{
       type: Schema.Types.ObjectId,
