@@ -1,26 +1,59 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import Events from "../models/Events.model.js"
+import Events from "../models/events.model.js"
 import { ApiError } from "../utils/ApiError.js";
-// only ann Admin can create an event
-const addEvent = asyncHandler(async(req,res)=>{
- const {eventName,dateOrganized,tasks} = req.body;
- if(!eventName || !dateOrganized || !tasks ){
-    throw new ApiError("All fields are required",400);
- }
- const event = await Events.findOne({eventName});
- if(event){
-    throw new ApiError("Event already exists",400);
- }
- if(req.user.role =="User"){
-    throw new ApiError("Only organizers can create events",403);
- }
- const createdBy = req.user._id.toString();
- if(!createdBy){
-    throw new ApiError("User not authenticated",401);
- }
- const newEvent = await Events.create({eventName,dateOrganized,tasks,createdBy});
-res.status(201).json(newEvent);
-})
+import { createTask } from "./tasks.controller.js";
+
+const addEvent = asyncHandler(async (req, res) => {
+   const { eventName, dateOrganized, tasks } = req.body;
+ 
+
+   if (!eventName || !dateOrganized || !Array.isArray(tasks) || tasks.length === 0) {
+     throw new ApiError("All fields (eventName, dateOrganized, and tasks) are required", 400);
+   }
+
+   const existingEvent = await Events.findOne({ eventName });
+   if (existingEvent) {
+     throw new ApiError("Event with this name already exists", 400);
+   }
+ 
+
+   if (req.user.role !== "Organizer") {
+     throw new ApiError("Only organizers can create events", 403);
+   }
+ 
+
+   const createdBy = req.user._id?.toString();
+   if (!createdBy) {
+     throw new ApiError("User not authenticated", 401);
+   }
+
+   try {
+     const taskIds = await Promise.all(
+       tasks.map(async (task) => {
+         if (!task.taskId || !task.taskName || !task.description) {
+           throw new ApiError("Each task must have taskId, taskName, and description", 400);
+         }
+         await createTask(task.taskId, task.taskName, task.description);
+         return task.taskId;
+       })
+     );
+ 
+     // Create a new event
+     const newEvent = await Events.create({
+       eventName,
+       dateOrganized,
+       tasks: taskIds,
+       createdBy,
+     });
+ 
+     res.status(201).json(newEvent);
+   } catch (err) {
+     // Log and rethrow error for consistent error handling
+     console.error("Error creating tasks or event:", err.message);
+     throw new ApiError(err.message || "Failed to create event", 500);
+   }
+ });
+ 
 const getEvents = asyncHandler(async(req,res)=>{
    if(req.role="User"){
       const events = await Events.find({});

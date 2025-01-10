@@ -17,7 +17,7 @@ const userSchema = new Schema({
   },
   role:{
     type: String,
-   
+
   },
   events:[{
       type: Schema.Types.ObjectId,
