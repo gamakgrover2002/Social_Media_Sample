@@ -16,20 +16,18 @@ const userSchema = new Schema({
     required: true,
     minlength: 8
   },
-  displayName:{
-    type: String,
-    required: true,
-    trim: true
-  },
   role:{
     type: String,
     required: true,
-    enum: ["user", "admin"]
+    enum: ["User", "admin"]
   },
   events:[{
       type: Schema.Types.ObjectId,
       ref: "Event"
   }],
+  refreshToken:{
+    type: String,
+  }
 
 },{
   timestamps:true
@@ -37,14 +35,60 @@ const userSchema = new Schema({
 );
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = bcrypt.hash(this.password, 10);
+  const user = this;
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 10);
   }
   next();
 });
-
-userSchema.methods.isPasswordCorrect = async function (password) {
+userSchema.methods.generateAccessToken = async function () {
+  //short lived access token
+  const accessToken = jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      role: this.role,
+    },
+    process.env.ACCESS_TOKEN_EXPIRY_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+  return accessToken;
+};
+userSchema.methods.generateRefreshToken = async function () {
+  //log lived access token
+  const refreshToken = jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_EXPIRY_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+  return refreshToken;
+};
+userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
+userSchema.methods.generateForgetPasswordToken = async function(){
+  const forgetPasswordToken = jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.FORGET_PASSWORD_TOKEN_SECRET,
+    {
+      expiresIn: process.env.FORGET_PASSWORD_TOKEN_EXPIRY,
+    }
+  );
+  return forgetPasswordToken;
+}
 
-export const User = mongoose.model("User", userSchema);
+
+const User = mongoose.model("User", userSchema);
+
+export default User;
+
+
+

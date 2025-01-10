@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Events from "../models/Events.model.js"
 import { ApiError } from "../utils/ApiError.js";
-
+// only ann Admin can create an event
 const addEvent = asyncHandler(async(req,res)=>{
  const {eventName,dateOrganized,tasks,createdBy} = req.body;
  if(!eventName || !dateOrganized || !tasks || !createdBy){
@@ -11,11 +11,21 @@ const addEvent = asyncHandler(async(req,res)=>{
  if(event){
     throw new ApiError("Event already exists",400);
  }
+ if(req.user.role =="User"){
+    throw new ApiError("Only organizers can create events",403);
+ }
  const newEvent = await Events.create({eventName,dateOrganized,tasks,createdBy});
 res.status(201).json(newEvent);
 })
 const getEvents = asyncHandler(async(req,res)=>{
-    const events = await Events.find({});
-    res.json(events);
+   if(req.role="User"){
+      const events = await Events.find({});
+      res.json(events);
+   }
+   if(req.role="Admin"){
+      const events = await Events.find({createdBy:req.user._id});
+      res.json(events);
+   }
 })
+
 export {addEvent,getEvents}
