@@ -1,7 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import User from "../models/User.model.js";
-import jwt from "jsonwebtoken"
-import { ApiError } from "../utils/ApiError.js";
+import User from "../models/user.model.js";
 import dotenv from "dotenv"
 
 dotenv.config({
@@ -83,31 +81,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-const refreshAccessToken = asyncHandler(async (req, res) => {
-
-  const incomingToken =  req.body.refreshToken;
-
-  if (!incomingToken) {
-    throw new ApiError(401, "No token provided");
-  }
-  try {
-    const decodedToken = jwt.verify(
-      incomingToken,
-      process.env.REFRESH_TOKEN_EXPIRY_SECRET
-    );
-    const user = await User.findById(decodedToken?._id);
-    if (!user) {
-      throw new ApiError(401, "Invalid token");
-    }
-    if (user.refreshToken !== user?.refreshToken) {
-      throw new ApiError(401, "Invalid Refresh token");
-    }
-    await generateTokens(user, res);
-    res.status(200).send("Access and Refresh tokens generated");
-  } catch (err) {
-    console.error(err);
-  }
-});
 
 const logoutUser = asyncHandler(async (req, res) => {
   const accessId = req.user._id.toString();
@@ -127,6 +100,5 @@ export {
   generateTokens,
   registerUser,
   loginUser,
-  refreshAccessToken,
   logoutUser,
 };

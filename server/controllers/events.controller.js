@@ -31,5 +31,38 @@ const getEvents = asyncHandler(async(req,res)=>{
       res.json(events);
    }
 })
+const deleteEvent = asyncHandler(async (req, res) => {
+   if(req.role="Admin"){
+   const id = req.params.eventId; 
+   const deletedEvent = await Events.findByIdAndDelete({_id: id}); 
+   if(!deletedEvent){
+      throw new ApiError("Event not found",404);
+   }
+   res.status(200).send("Event deleted")
+   }
+   else{
+      throw new ApiError("Only organizers can delete events",403);
+   }
+});
+const updateEvent = asyncHandler(async (req, res) => {
+   const {dateOrganized,eventName} = req.body;
+   if(req.role="Admin"){
+   const id = req.params.eventId; 
+   const event = await Events.findById({_id: id}); 
+   if(!event){
+      throw new ApiError("Event not found",404);
+   }
+   if(dateOrganized){
+      event.dateOrganized = dateOrganized;
+   }
+   if(eventName){
+      event.eventName = eventName;
+   }
+   await event.save();
+   res.status(200).send("Event updated")
+   }
 
-export {addEvent,getEvents}
+      throw new ApiError("Only organizers can delete events",403);
+});
+
+export {addEvent,getEvents,deleteEvent,updateEvent}
